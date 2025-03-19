@@ -9,9 +9,11 @@ FlatcarMicroCloud es una infraestructura optimizada para Kubernetes, diseñada c
 ## 🚀 Instalación y Uso
 
 ### 1️⃣ Clonar el repositorio
+
+Clona este repositorio en tu máquina local:
 ```sh
- git clone https://github.com/tuusuario/FlatcarMicroCloud.git
- cd FlatcarMicroCloud
+ git clone https://github.com/vhgalvez/arquitectura_FlatcarMicroCloud.git
+ cd arquitectura_FlatcarMicroCloud
 ```
 
 ### 2️⃣ Instalar dependencias
