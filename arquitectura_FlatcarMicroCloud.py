@@ -8,11 +8,9 @@ from diagrams.onprem.storage import Ceph
 from diagrams.generic.os import LinuxGeneral
 from diagrams.onprem.dns import Coredns
 from diagrams.onprem.database import Postgresql
-from diagrams.generic.blank import Blank  # Para título visual y nodo lógico
+from diagrams.generic.blank import Blank  # Solo se usa para nodo lógico
 
 with Diagram("", show=False, direction="TB", outformat="png"):
-    # Título visual sin conexión
-    titulo = Blank("FLATCARMICROCLOUD - INFRAESTRUCTURA GLOBAL")
 
     # Entrada pública
     usuarios = Users("Usuarios Públicos")
@@ -46,7 +44,7 @@ with Diagram("", show=False, direction="TB", outformat="png"):
         s1 = Ceph("storage1\n10.17.3.27")
     haproxy >> [w1, w2, w3, s1]
 
-    # Nodo lógico para servicios
+    # Nodo invisible para simplificar las conexiones de servicios
     infra = Blank("")
 
     [m1, m2, m3, w1, w2, w3] >> infra
