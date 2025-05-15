@@ -1,67 +1,48 @@
-from diagrams import Node, Diagram, Cluster, Edge
+from diagrams import Cluster, Diagram, Edge, Node
 from diagrams.k8s.compute import Pod, StatefulSet
-from diagrams.generic.network import VPN
-from diagrams.aws.general import User
 
-# Clase personalizada para evitar errores de tamaño
-class CustomNode(Node):
-    _attr = {
-        "fontsize": "8",        # más pequeña
-        "width": "3.0",         # más ancho
-        "height": "1.2",        # más alto
-        "fixedsize": "false"
-    }
-
-
-# SVG para mejor compatibilidad
 with Diagram("FlatcarMicroCloud - Arquitectura de Infraestructura", 
              show=False, 
              direction="TB", 
              outformat="svg"):
-    
+
     # Acceso externo
-    users = User("Usuarios Públicos")
-    vpn_gateway = VPN("WireGuard VPN\n10.17.0.1")
-    users >> Edge(label="VPN Segura") >> vpn_gateway
+    user = Node("👥 Usuarios Públicos")
+    cloudflare = Node("🌐 Cloudflare CDN\nProxy + WAF + Anti-DDoS")
+    vpn = Node("VPS Público\nWireGuard Gateway\n10.17.0.1")
+    fisico = Node("Servidor Físico\nWireGuard + NAT + nftables\n192.168.0.19")
 
-    # Red local
-    with Cluster("Red Local Segura (192.168.0.0/24)"):
-        pfsense = CustomNode("pfSense\n192.168.0.200")
-        vpn_gateway >> pfsense
+    user >> Edge(label="HTTPS + Seguridad + Caché") >> cloudflare
+    cloudflare >> vpn >> fisico
 
-        # Balanceadores
-        with Cluster("Ingress Load Balancers"):
-            lb1 = CustomNode("Traefik LB1\n10.17.3.12")
-            lb2 = CustomNode("Traefik LB2\n10.17.3.13")
+    with Cluster("Ingress Kubernetes"):
+        lb1 = Node("Load Balancer 1 (Traefik)\n10.17.3.12\nloadbalancer1.cefaslocalserver.com")
+        lb2 = Node("Load Balancer 2 (Traefik)\n10.17.3.13\nloadbalancer2.cefaslocalserver.com")
 
-        with Cluster("HAProxy + Keepalived"):
-            haproxy = CustomNode("VIP 10.17.5.10\nAlta Disponibilidad")
+    fisico >> [lb1, lb2]
 
-        pfsense >> [lb1, lb2] >> haproxy
+    haproxy = Node("HAProxy + Keepalived\nVIP: 10.17.5.10\nHA: 10.17.5.20\nk8s-api-lb.cefaslocalserver.com")
+    [lb1, lb2] >> haproxy
 
-        # Plano de control de Kubernetes
-        with Cluster("Kubernetes - Control Plane"):
-            master1 = StatefulSet("Master 1\n10.17.4.21")
-            master2 = StatefulSet("Master 2\n10.17.4.22")
-            master3 = StatefulSet("Master 3\n10.17.4.23")
+    with Cluster("Kubernetes Control Plane"):
+        master1 = StatefulSet("master1.cefaslocalserver.com\n10.17.4.21\nFlatcar / etcd + API")
+        master2 = StatefulSet("master2.cefaslocalserver.com\n10.17.4.22\nFlatcar / etcd")
+        master3 = StatefulSet("master3.cefaslocalserver.com\n10.17.4.23\nFlatcar / etcd")
 
-        haproxy >> [master1, master2, master3]
+    haproxy >> [master1, master2, master3]
 
-        # Nodos Workers
-        with Cluster("Kubernetes - Workers"):
-            worker1 = Pod("Worker 1\n10.17.4.24")
-            worker2 = Pod("Worker 2\n10.17.4.25")
-            worker3 = Pod("Worker 3\n10.17.4.26")
-            storage = Pod("Storage\n10.17.4.27")
+    with Cluster("Workers + Almacenamiento"):
+        worker1 = Pod("worker1.cefaslocalserver.com\n10.17.4.24\nFlatcar / Longhorn")
+        worker2 = Pod("worker2.cefaslocalserver.com\n10.17.4.25\nFlatcar / Longhorn")
+        worker3 = Pod("worker3.cefaslocalserver.com\n10.17.4.26\nFlatcar / Longhorn")
+        storage = Pod("storage1.cefaslocalserver.com\n10.17.3.27\nAlmaLinux / 🐂 Longhorn + 📁 NFS")
 
-        lb1 >> [worker1, worker2, worker3, storage]
-        lb2 >> [worker1, worker2, worker3, storage]
+    haproxy >> [worker1, worker2, worker3, storage]
 
-        # Infraestructura de soporte
-        with Cluster("Infraestructura de Soporte"):
-            freeipa = CustomNode("FreeIPA\n10.17.3.11")
-            db = CustomNode("PostgreSQL\n10.17.3.14")
-            persistent = CustomNode("Almacenamiento\n10.17.4.27")
+    with Cluster("🧠 Servicios Complementarios"):
+        dns = Node("CoreDNS\n10.17.3.11\ninfra-cluster.cefaslocalserver.com\nDNS interno + NTP")
+        db = Node("PostgreSQL\n10.17.3.14\npostgresql1.cefaslocalserver.com\nDB centralizada")
 
-        lb1 >> [freeipa, db, persistent]
-        lb2 >> [freeipa, db, persistent]
+    for w in [worker1, worker2, worker3]:
+        w >> dns
+        w >> db
