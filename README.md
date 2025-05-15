@@ -106,8 +106,7 @@ Prueba la carga de íconos disponibles en la librería `diagrams` para verificar
 
 ### Infraestructura Global
 
-![FlatcarMicroCloud - Infraestructura Global](flatcarmicrocloud_-_infraestructura_global.png)
-
+![FlatcarMicroCloud - Infraestructura Global](diagrams_image.png)
 ### Carga Completa de Íconos
 
 ![Test - Carga Completa de Íconos](test_-_carga_completa_de_íconos.png)
