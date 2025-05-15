@@ -8,6 +8,7 @@ from diagrams.onprem.storage import Ceph
 from diagrams.generic.os import LinuxGeneral
 from diagrams.onprem.dns import Coredns
 from diagrams.onprem.database import Postgresql
+from diagrams.generic.blank import Blank  # Para nodo invisible
 
 with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction="TB", outformat="png"):
 
@@ -43,12 +44,13 @@ with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction
         s1 = Ceph("storage1\n10.17.3.27")
     haproxy >> [w1, w2, w3, s1]
 
-    # Servicios vinculados a la arquitectura
+    # Servicios
     dns = Coredns("CoreDNS\n10.17.3.11")
     db = Postgresql("PostgreSQL\n10.17.3.14")
 
-    # DNS se conecta a Masters y Workers
-    [m1, m2, m3, w1, w2, w3] >> dns
+    # Nodo lógico para simplificar conexión
+    infra = Blank("Infraestructura")
 
-    # PostgreSQL se usa por Workers y Masters
-    [m1, m2, m3, w1, w2, w3] >> db
+    [m1, m2, m3, w1, w2, w3] >> infra
+    infra >> dns
+    infra >> db
