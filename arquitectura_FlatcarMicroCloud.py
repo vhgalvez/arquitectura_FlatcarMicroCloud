@@ -1,61 +1,54 @@
 from diagrams import Diagram, Cluster, Edge
-
-# OnPrem Components
+from diagrams.generic.network import VPN
+from diagrams.generic.place import Datacenter
 from diagrams.onprem.client import Users
 from diagrams.onprem.network import Pfsense, Haproxy, Traefik
 from diagrams.onprem.container import K3S
-from diagrams.onprem.monitoring import Prometheus, Grafana
-from diagrams.onprem.queue import Rabbitmq
-from diagrams.onprem.database import Postgresql
-from diagrams.onprem.dns import Coredns
-from diagrams.onprem.ci import Jenkins
-from diagrams.onprem.vcs import Gitlab
 from diagrams.onprem.storage import Ceph
-
-# Generic Components
 from diagrams.generic.os import LinuxGeneral
-from diagrams.generic.network import VPN
-from diagrams.generic.place import Datacenter
+from diagrams.onprem.dns import Coredns
+from diagrams.onprem.database import Postgresql
 
-with Diagram("FlatcarMicroCloud - Infraestructura Global Optimizada", show=False, direction="TB", outformat="png"):
+with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction="TB", outformat="png"):
 
-    # Zona de acceso externo
+    # Entrada pública
     usuarios = Users("Usuarios Públicos")
-    vpn = VPN("VPN Pública\n10.17.0.1")
-    firewall = Pfsense("Firewall NAT\n192.168.0.19")
-    lan = Datacenter("Red LAN\n192.168.0.0/24")
+    cloudflare = VPN("Cloudflare\nCDN + WAF")
+    vpn = VPN("WireGuard\n10.17.0.1")
+    firewall = Pfsense("Firewall + NAT\n192.168.0.19")
 
-    usuarios >> Edge(label="HTTPS + Cloudflare") >> vpn >> firewall >> lan
+    usuarios >> Edge(label="HTTPS + Seguridad + Caché") >> cloudflare >> vpn >> firewall
 
-    with Cluster("Kubernetes Ingress"):
-        lb1 = Traefik("LB1\n10.17.3.12\nloadbalancer1")
-        lb2 = Traefik("LB2\n10.17.3.13\nloadbalancer2")
-        lan >> [lb1, lb2]
+    # Ingress
+    with Cluster("Ingress"):
+        lb1 = Traefik("LB1\n10.17.3.12")
+        lb2 = Traefik("LB2\n10.17.3.13")
+    firewall >> [lb1, lb2]
 
-    haproxy = Haproxy("HAProxy + Keepalived\nVIP: 10.17.5.10\nAPI LB")
+    haproxy = Haproxy("HAProxy\nVIP: 10.17.5.10\nHA: 10.17.5.20")
     [lb1, lb2] >> haproxy
 
-    with Cluster("Kubernetes Control Plane"):
-        m1 = K3S("master1\n10.17.4.21\netcd + API")
-        m2 = K3S("master2\n10.17.4.22\netcd")
-        m3 = K3S("master3\n10.17.4.23\netcd")
+    # Control Plane
+    with Cluster("Masters"):
+        m1 = K3S("master1\n10.17.4.21")
+        m2 = K3S("master2\n10.17.4.22")
+        m3 = K3S("master3\n10.17.4.23")
     haproxy >> [m1, m2, m3]
 
-    with Cluster("Kubernetes Workers + Storage"):
-        w1 = LinuxGeneral("worker1\n10.17.4.24\nFlatcar")
-        w2 = LinuxGeneral("worker2\n10.17.4.25\nFlatcar")
-        w3 = LinuxGeneral("worker3\n10.17.4.26\nFlatcar")
-        storage = Ceph("storage1\n10.17.3.27\nLonghorn + NFS")
-    haproxy >> [w1, w2, w3, storage]
+    # Workers + Storage
+    with Cluster("Workers + Storage"):
+        w1 = LinuxGeneral("worker1\n10.17.4.24")
+        w2 = LinuxGeneral("worker2\n10.17.4.25")
+        w3 = LinuxGeneral("worker3\n10.17.4.26")
+        s1 = Ceph("storage1\n10.17.3.27")
+    haproxy >> [w1, w2, w3, s1]
 
-    with Cluster("Servicios Complementarios"):
-        dns = Coredns("CoreDNS\n10.17.3.11")
-        db = Postgresql("PostgreSQL\n10.17.3.14")
-        prom = Prometheus("Prometheus")
-        graf = Grafana("Grafana")
-        jenkins = Jenkins("Jenkins CI/CD")
-        queue = Rabbitmq("RabbitMQ")
-        vcs = Gitlab("GitLab")
+    # Servicios vinculados a la arquitectura
+    dns = Coredns("CoreDNS\n10.17.3.11")
+    db = Postgresql("PostgreSQL\n10.17.3.14")
 
-    for w in [w1, w2, w3]:
-        w >> [dns, db, prom, graf, jenkins, queue, vcs]
+    # DNS se conecta a Masters y Workers
+    [m1, m2, m3, w1, w2, w3] >> dns
+
+    # PostgreSQL se usa por Workers y Masters
+    [m1, m2, m3, w1, w2, w3] >> db
