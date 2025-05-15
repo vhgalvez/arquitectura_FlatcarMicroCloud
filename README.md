@@ -104,7 +104,7 @@ Prueba la carga de íconos disponibles en la librería `diagrams` para verificar
 
 ## 🖼️ Ejemplo de Diagramas Generados
 
-### Infraestructura Global
+### Infraestructura Global de FlatcarMicroCloud
 
 ![FlatcarMicroCloud - Infraestructura Global](diagrams_image.png)
 ### Carga Completa de Íconos
