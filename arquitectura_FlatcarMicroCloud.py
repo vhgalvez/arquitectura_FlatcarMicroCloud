@@ -8,9 +8,12 @@ from diagrams.onprem.storage import Ceph
 from diagrams.generic.os import LinuxGeneral
 from diagrams.onprem.dns import Coredns
 from diagrams.onprem.database import Postgresql
-from diagrams.generic.blank import Blank  # Para nodo invisible
+from diagrams.generic.blank import Blank  # Para título visual y nodo lógico
 
-with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction="TB", outformat="png"):
+with Diagram("", show=False, direction="TB", outformat="png"):
+
+    # Título visual como nodo superior
+    titulo = Blank("**FlatcarMicroCloud - Infraestructura Global**")
 
     # Entrada pública
     usuarios = Users("Usuarios Públicos")
@@ -18,7 +21,7 @@ with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction
     vpn = VPN("WireGuard\n10.17.0.1")
     firewall = Pfsense("Firewall + NAT\n192.168.0.19")
 
-    usuarios >> Edge(label="HTTPS + Seguridad + Caché") >> cloudflare >> vpn >> firewall
+    titulo >> usuarios >> Edge(label="HTTPS + Seguridad + Caché") >> cloudflare >> vpn >> firewall
 
     # Ingress
     with Cluster("Ingress"):
@@ -29,7 +32,7 @@ with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction
     haproxy = Haproxy("HAProxy\nVIP: 10.17.5.10\nHA: 10.17.5.20")
     [lb1, lb2] >> haproxy
 
-    # Control Plane
+    # Masters
     with Cluster("Masters"):
         m1 = K3S("master1\n10.17.4.21")
         m2 = K3S("master2\n10.17.4.22")
@@ -44,13 +47,13 @@ with Diagram("FlatcarMicroCloud - Infraestructura Global", show=False, direction
         s1 = Ceph("storage1\n10.17.3.27")
     haproxy >> [w1, w2, w3, s1]
 
-    # Servicios
-    dns = Coredns("CoreDNS\n10.17.3.11")
-    db = Postgresql("PostgreSQL\n10.17.3.14")
-
-    # Nodo lógico para simplificar conexión
-    infra = Blank("Infraestructura")
+    # Nodo lógico invisible para simplificar conexiones
+    infra = Blank("")
 
     [m1, m2, m3, w1, w2, w3] >> infra
+
+    # Servicios centrales
+    dns = Coredns("CoreDNS\n10.17.3.11")
+    db = Postgresql("PostgreSQL\n10.17.3.14")
     infra >> dns
     infra >> db
