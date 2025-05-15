@@ -2,71 +2,124 @@
 
 Este repositorio contiene el diagrama de arquitectura de **FlatcarMicroCloud**, representado utilizando la librería [`diagrams`](https://diagrams.mingrammer.com/) de Mingrammer.
 
+---
+
 ## 📌 Descripción
 
 FlatcarMicroCloud es una infraestructura optimizada para Kubernetes, diseñada con seguridad, escalabilidad y eficiencia. El diagrama generado muestra la estructura de red, balanceo de carga, seguridad y nodos del clúster.
+
+---
 
 ## 🚀 Instalación y Uso
 
 ### 1️⃣ Clonar el repositorio
 
 Clona este repositorio en tu máquina local:
+
 ```sh
- git clone https://github.com/vhgalvez/arquitectura_FlatcarMicroCloud.git
- cd arquitectura_FlatcarMicroCloud
+git clone https://github.com/vhgalvez/arquitectura_FlatcarMicroCloud.git
+cd arquitectura_FlatcarMicroCloud
 ```
 
 ### 2️⃣ Instalar dependencias
+
 Necesitas tener **Python 3.x** y **Graphviz** instalado:
+
 ```sh
 pip install diagrams
 ```
 
-#### Instalar `graphviz` según tu sistema:
+#### Instalar graphviz según tu sistema
+
 - **Ubuntu/Debian**:
+
   ```sh
   sudo apt install graphviz
   ```
+
 - **macOS (Homebrew)**:
+
   ```sh
   brew install graphviz
   ```
+
 - **Windows**:
+
   Descarga e instala Graphviz desde [graphviz.org](https://graphviz.gitlab.io/download/).
 
 ### 3️⃣ Generar el diagrama
-Ejecuta el script para generar la imagen:
+
+Ejecuta el script principal para generar la imagen:
+
 ```sh
-python infra_diagram.py
+python arquitectura_FlatcarMicroCloud.py
 ```
-Esto generará un archivo `FlatcarMicroCloud.png` con la arquitectura visualizada.
+
+Esto generará un archivo `FlatcarMicroCloud - Infraestructura Global.png` con la arquitectura visualizada.
+
+---
 
 ## 🏗️ Arquitectura de la Infraestructura
 
 ### 📡 Usuarios Públicos y Seguridad Externa
-- **Usuarios Públicos** acceden mediante **Cloudflare CDN**, que actúa como proxy y cache.
+
+- **Usuarios Públicos** acceden mediante **Cloudflare CDN**, que actúa como proxy y caché.
 - **VPS con IP Pública** expone servicios de forma segura a través de **WireGuard VPN Gateway**.
 
 ### 🔀 Balanceo de Carga
+
 - **Traefik Load Balancers** manejan el tráfico interno.
 - Integración con **Kubernetes y FreeIPA**.
 
 ### 🖥️ Infraestructura Base
+
 - **Bastion Node**: Control de acceso seguro.
 - **FreeIPA Node**: Autenticación y DNS.
 - **PostgreSQL Node**: Base de datos principal.
 
 ### ☸️ Clúster Kubernetes
+
 - **3 Master Nodes (etcd)**: Control y coordinación del clúster.
 - **3 Worker Nodes**: Procesamiento y ejecución de contenedores.
 - **Storage Node**: Almacenamiento distribuido.
 
+---
 
-## 📜 License
+## 📊 Scripts Disponibles
 
-This project is **Licencia MIT** under the [MIT License](LICENSE).
+### arquitectura_FlatcarMicroCloud.py
+
+Genera el diagrama principal de la infraestructura global, incluyendo:
+
+- Usuarios públicos y seguridad externa.
+- Balanceadores de carga (Traefik y HAProxy).
+- Nodos maestros y trabajadores de Kubernetes.
+- Nodo de almacenamiento.
+
+### carga_completa_iconos.py
+
+Prueba la carga de íconos disponibles en la librería `diagrams` para verificar compatibilidad y diseño.
 
 ---
+
+## 🖼️ Ejemplo de Diagramas Generados
+
+### Infraestructura Global
+
+![FlatcarMicroCloud - Infraestructura Global](flatcarmicrocloud_-_infraestructura_global.png)
+
+### Carga Completa de Íconos
+
+![Test - Carga Completa de Íconos](test_-_carga_completa_de_íconos.png)
+
+---
+
+## 📜 Licencia
+
+Este proyecto está bajo la **Licencia MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
 📧 **Contacto:** Si tienes dudas o sugerencias, ¡abre un issue o contribuye al proyecto! 🚀
 
 
@@ -74,6 +127,7 @@ This project is **Licencia MIT** under the [MIT License](LICENSE).
 
 
 
+```bash
 
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
           ░░ INFRAESTRUCTURA GLOBAL FLATCARMICROCLOUD ░░
@@ -156,3 +210,8 @@ This project is **Licencia MIT** under the [MIT License](LICENSE).
 | IP: 10.17.3.11                           | IP: 10.17.3.14                             |
 | DNS interno y sincronización horaria     | Base de datos centralizada para microservicios |
 +------------------------------------------+   +------------------------------------------+
+
+
+```
+
+─────────────────────────────────────────────────────────────────────────────
